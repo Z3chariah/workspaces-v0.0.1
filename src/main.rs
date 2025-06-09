@@ -1,16 +1,12 @@
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
-use std::{
-    io::{self, Read},
-    process::exit,
-};
-
+use std::io::{self, Read, Write};
+use std::process::exit;
 #[derive(Debug)]
 struct Components {
     title: String,
     description: String,
-    tooltip: String,
 }
-
+#[allow(unused_assignments)]
 fn main() {
     let mut current_workspace: Workspaces = Workspaces::Default;
     let menu_items = vec![
@@ -19,12 +15,10 @@ fn main() {
             description: String::from(
                 "A workspace which allows you to run various terminal commands and start files!",
             ),
-            tooltip: String::from(""),
         },
         Components {
             title: String::from("Enter home workspace."),
             description: String::from("Enter home workspace."),
-            tooltip: String::from(""),
         },
     ];
 
@@ -43,12 +37,19 @@ fn main() {
                 'l' => current_workspace = Workspaces::Plugins,
                 'h' => current_workspace = Workspaces::Default,
                 'q' => current_workspace = Workspaces::Exit,
-                _ => disable_raw_mode().unwrap(),
+                _ => {
+                    disable_raw_mode().unwrap();
+                    exit(2);
+                }
             }
             print!("\x1B[2J\x1B[H");
             handleworkspace(&current_workspace);
 
-            if current_workspace == Workspaces::Exit {
+            if current_workspace != Workspaces::Exit {
+                print!("\x1B[2J\x1B[H");
+                handleworkspace(&current_workspace);
+            } else {
+                disable_raw_mode();
                 break;
             }
         }
@@ -56,16 +57,23 @@ fn main() {
 }
 
 fn print_component(_c: &Components) {
-    print!("{} {} {}\n", _c.title, _c.description, _c.tooltip);
+    println!("{} {}", _c.title, _c.description);
 }
 
 fn handleworkspace(ws: &Workspaces) {
     match ws {
-        Workspaces::Study => print!("inside of the study workspace\n"),
-        Workspaces::Gamedev => print!("inside of the gamedev workspace\n"),
-        Workspaces::Plugins => print!("inside of the plugins workspace\n"),
-        Workspaces::Default => print!("inside of the default workspace\n"),
-        Workspaces::Exit => exit(1),
+        Workspaces::Study => {
+            println!(r#"Press [K] to open Obsidian an Remnote."#);
+            io::stdout().flush().unwrap();
+        }
+
+        Workspaces::Gamedev => println!("inside of the gamedev workspace."),
+        Workspaces::Plugins => println!("inside of the plugins workspace."),
+        Workspaces::Default => println!("inside of the default workspace."),
+        Workspaces::Exit => {
+            disable_raw_mode().unwrap();
+            exit(1);
+        }
     }
 }
 #[derive(PartialEq)]
