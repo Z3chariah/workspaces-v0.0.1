@@ -7,6 +7,7 @@ struct Components {
     description: String,
 }
 #[allow(unused_assignments)]
+#[allow(unused)]
 fn main() {
     let mut current_workspace: Workspaces = Workspaces::Default;
     let menu_items = vec![
@@ -48,9 +49,9 @@ fn main() {
             if current_workspace != Workspaces::Exit {
                 print!("\x1B[2J\x1B[H");
                 handleworkspace(&current_workspace);
+                continue;
             } else {
-                disable_raw_mode();
-                break;
+                disable_raw_mode().unwrap()
             }
         }
     }
@@ -60,22 +61,44 @@ fn print_component(_c: &Components) {
     println!("{} {}", _c.title, _c.description);
 }
 
+#[allow(unused)]
 fn handleworkspace(ws: &Workspaces) {
     match ws {
         Workspaces::Study => {
-            println!(r#"Press [K] to open Obsidian an Remnote."#);
+            println!("Press [K] to open Obsidian [J] to open Remnote. and [L] to open Notion");
             io::stdout().flush().unwrap();
+            use std::process::Command;
+
+            for b in io::stdin().bytes() {
+                let keypress = b.unwrap() as char;
+
+                match keypress {
+                    'k' => {
+                        Command::new("Open").arg("-a").arg("Obsidian").spawn();
+                    }
+                    'j' => {
+                        Command::new("Open").arg("-a").arg("RemNote").spawn();
+                    }
+
+                    'l' => {
+                        Command::new("Open").arg("-a").arg("Notion").spawn();
+                    }
+                    _ => {
+                        exit(1);
+                    }
+                }
+            }
         }
 
-        Workspaces::Gamedev => println!("inside of the gamedev workspace."),
+        Workspaces::Gamedev => println!("insid of the game development workspace"),
         Workspaces::Plugins => println!("inside of the plugins workspace."),
         Workspaces::Default => println!("inside of the default workspace."),
         Workspaces::Exit => {
-            disable_raw_mode().unwrap();
             exit(1);
         }
     }
 }
+
 #[derive(PartialEq)]
 enum Workspaces {
     Default,
