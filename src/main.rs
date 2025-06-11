@@ -1,33 +1,19 @@
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use std::io::{self, Read, Write};
+
 use std::process::exit;
-#[derive(Debug)]
-struct Components {
-    title: String,
-    description: String,
-}
+
 #[allow(unused_assignments)]
 #[allow(unused)]
 fn main() {
     let mut current_workspace: Workspaces = Workspaces::Default;
-    let menu_items = vec![
-        Components {
-            title: String::from("Enter home workspace."),
-            description: String::from(
-                "A workspace which allows you to run various terminal commands and start files!",
-            ),
-        },
-        Components {
-            title: String::from("Enter home workspace."),
-            description: String::from("Enter home workspace."),
-        },
-    ];
+    let version = String::from("V0.0.1");
+    println!(
+        "Welcome to Workspaces version {}.\n Press [k] for the Study Space [j] for the game development workspace.",
+        version
+    );
 
-    for item in &menu_items {
-        print_component(&item);
-    }
-
-    loop {
+    while current_workspace != Workspaces::Exit {
         enable_raw_mode().unwrap();
         for b in io::stdin().bytes() {
             let keypress = b.unwrap() as char;
@@ -43,22 +29,16 @@ fn main() {
                     exit(2);
                 }
             }
-            print!("\x1B[2J\x1B[H");
-            handleworkspace(&current_workspace);
 
-            if current_workspace != Workspaces::Exit {
-                print!("\x1B[2J\x1B[H");
+            if current_workspace == Workspaces::Exit {
+                exit(2)
+            } else {
+                println!("\x1B[2J\x1B[H");
                 handleworkspace(&current_workspace);
                 continue;
-            } else {
-                disable_raw_mode().unwrap()
             }
         }
     }
-}
-
-fn print_component(_c: &Components) {
-    println!("{} {}", _c.title, _c.description);
 }
 
 #[allow(unused)]
@@ -83,14 +63,33 @@ fn handleworkspace(ws: &Workspaces) {
                     'l' => {
                         Command::new("Open").arg("-a").arg("Notion").spawn();
                     }
-                    _ => {
-                        exit(1);
-                    }
+                    _ => handleworkspace(&Workspaces::Exit),
                 }
             }
         }
 
-        Workspaces::Gamedev => println!("insid of the game development workspace"),
+        Workspaces::Gamedev => {
+            println!("Press [K] to open Godot [J] to open Aseprite. and [L] to open Zed");
+            use std::process::Command;
+            for b in io::stdin().bytes() {
+                let keypress = b.unwrap() as char;
+
+                match keypress {
+                    'k' => {
+                        Command::new("Open").arg("-a").arg("Godot").spawn();
+                    }
+                    'j' => {
+                        Command::new("Open").arg("-a").arg("Aseprite").spawn();
+                    }
+
+                    'l' => {
+                        Command::new("Open").arg("-a").arg("Zed").spawn();
+                    }
+                    _ => handleworkspace(&Workspaces::Exit),
+                }
+            }
+        }
+
         Workspaces::Plugins => println!("inside of the plugins workspace."),
         Workspaces::Default => println!("inside of the default workspace."),
         Workspaces::Exit => {
