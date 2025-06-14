@@ -1,7 +1,5 @@
-// use crossterm::Command;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use std::io::{self, Read};
-
 use std::process::exit;
 
 #[allow(unused_assignments)]
@@ -12,11 +10,11 @@ fn main() {
         for b in io::stdin().bytes() {
             let keypress = b.unwrap() as char;
 
-            let mut ws: workspaces = match keypress {
-                'k' => workspaces::Study,
-                'j' => workspaces::Gamedev,
-                'l' => workspaces::Plugins,
-                'h' => workspaces::Default,
+            let mut ws: WorkSpaces = match keypress {
+                'k' => WorkSpaces::Study,
+                'j' => WorkSpaces::Gamedev,
+                'l' => WorkSpaces::Plugins,
+                'h' => WorkSpaces::Default,
                 _ => {
                     disable_raw_mode().unwrap();
                     exit(1)
@@ -28,8 +26,7 @@ fn main() {
     }
 }
 
-#[allow(non_camel_case_types)]
-enum workspaces {
+enum WorkSpaces {
     Default,
     Study,
     Plugins,
@@ -37,19 +34,19 @@ enum workspaces {
 }
 
 #[allow(unused)]
-impl workspaces {
+impl WorkSpaces {
     fn state_machine(&self) {
         match self {
-            workspaces::Study => {
+            WorkSpaces::Study => {
                 println!("I am in the Study Workspace")
             }
-            workspaces::Plugins => {
+            WorkSpaces::Plugins => {
                 println!("I am in the Plugins Workspace")
             }
-            workspaces::Default => {
+            WorkSpaces::Default => {
                 println!("I am in the Default Workspace")
             }
-            workspaces::Gamedev => {
+            WorkSpaces::Gamedev => {
                 println!("I am in the Game Developer Workspace")
             }
             _ => exit(0),
